@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Prompt', sans-serif;
+}
+
+body {
+  @apply bg-white text-slate-900 min-h-screen;
+}
