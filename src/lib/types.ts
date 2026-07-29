@@ -1,18 +1,56 @@
 import type { Timestamp } from 'firebase/firestore';
 
+export type QuestionType = 'quiz' | 'tf' | 'type' | 'poll' | 'wordCloud' | 'openEnded';
+
 export interface QuestionOption {
   id: string;
   value: string;
 }
 
-export interface Question {
+interface QuestionBase {
   id: string;
   prompt: string;
+  order: number;
+  timeLimit: number;
+}
+
+export interface QuizQuestion extends QuestionBase {
+  type: 'quiz';
   options: QuestionOption[];
   correctAnswerId: string;
-  timeLimit: number;
-  order: number;
 }
+
+export interface TFQuestion extends QuestionBase {
+  type: 'tf';
+  options: QuestionOption[];
+  correctAnswerId: string;
+}
+
+export interface TypeQuestion extends QuestionBase {
+  type: 'type';
+  correctAnswer: string;
+}
+
+export interface PollQuestion extends QuestionBase {
+  type: 'poll';
+  options: QuestionOption[];
+}
+
+export interface WordCloudQuestion extends QuestionBase {
+  type: 'wordCloud';
+}
+
+export interface OpenEndedQuestion extends QuestionBase {
+  type: 'openEnded';
+}
+
+export type Question =
+  | QuizQuestion
+  | TFQuestion
+  | TypeQuestion
+  | PollQuestion
+  | WordCloudQuestion
+  | OpenEndedQuestion;
 
 export type SessionStatus = 'waiting' | 'active' | 'finished';
 
@@ -61,7 +99,9 @@ export interface AvatarConfig {
 export interface Answer {
   id: string;
   questionId: string;
+  type: QuestionType;
   chosenAnswerId: string | null;
+  typedAnswer: string | null;
   isCorrect: boolean;
   playerId: string;
   playerName: string;

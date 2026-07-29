@@ -19,6 +19,7 @@
   import { db } from '$lib/firebase';
   import type { Session, Quiz, Question, Player, Answer, AvatarConfig } from '$lib/types';
   import AvatarCreator from '$lib/AvatarCreator.svelte';
+  import ActiveQuizCard from '$lib/components/ActiveQuizCard.svelte';
 
   const sessionId = $page.params.sessionId!;
 
@@ -34,6 +35,7 @@
   let answerId = $state<string | null>(null);
 
   let selectedOptionId = $state<string | null>(null);
+  let textAnswer = $state('');
   let submitted = $state(false);
   let isCorrect = $state(false);
   let pointsEarned = $state(0);
@@ -44,6 +46,9 @@
   let avatarConfig = $state<AvatarConfig | null>(null);
 
   let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  let noTimeLimit = $derived(question != null && question.timeLimit === 0);
+  let countdownActive = $derived(countdown != null && countdown > 0);
 
   $effect(() => {
     if (!avatarConfig || !playerId || !sessionId) return;
@@ -77,7 +82,6 @@
       playerName = playerData.playerName ?? '';
       const saved = playerData.avatarConfig as AvatarConfig | undefined;
       if (saved) avatarConfig = saved;
-      //const q = query(collection(db, 'sessions'), where('code', '==', code));
       const sessionSnap = await getDoc(doc(db, 'sessions', sessionId));
       if (!sessionSnap.exists()) {
         error = 'Session not found';
@@ -87,7 +91,6 @@
 
       const sessionData = { id: sessionSnap.id, ...sessionSnap.data() } as Session;
       session = sessionData;
-      console.log(drift);
       const quizDoc = await getDoc(doc(db, 'quizzes', sessionData.quizId));
       if (!quizDoc.exists()) {
         error = 'Quiz not found';
@@ -126,6 +129,10 @@
 
       function startLocalCountdown(questionStartedAt: Timestamp, timeLimit: number) {
         clearInterval(localTimer!);
+        if (timeLimit === 0) {
+          countdown = -1;
+          return;
+        }
         const tick = () => {
           const serverNow = Date.now() + drift;
           const elapsed = (serverNow - questionStartedAt.toMillis()) / 1000;
@@ -153,6 +160,7 @@
           if (qChanged) {
             submitted = false;
             selectedOptionId = null;
+            textAnswer = '';
             answerId = null;
             checkAlreadyAnswered(sData.liveQuestion.id);
             if (sData.questionStartedAt) {
@@ -213,30 +221,40 @@
     );
     if (!snap.empty) {
       const ans = snap.docs[0].data() as Answer;
-      console.log(snap.docs[0].data());
       answerId = snap.docs[0].id;
       submitted = true;
       selectedOptionId = ans.chosenAnswerId;
+      if (question != null && (question.type === 'type' || question.type === 'wordCloud' || question.type === 'openEnded')) {
+        textAnswer = ans.typedAnswer ?? '';
+      }
       if (ans.isCorrect !== undefined) isCorrect = ans.isCorrect;
       listenForAnswers();
     }
   }
 
-  async function submitAnswer(optionId: string | null) {
+  async function submitAnswer(value: string | null) {
     if (submitted || !session || !question || !playerId || !sessionId) return;
 
     submitted = true;
-    selectedOptionId = optionId;
+    selectedOptionId = value;
+
+    const isTextType = question.type === 'type' || question.type === 'wordCloud' || question.type === 'openEnded';
 
     const ansRef = await addDoc(collection(db, 'sessions', sessionId, 'answers'), {
       playerId,
       questionId: question.id,
-      chosenAnswerId: optionId,
+      type: question.type,
+      chosenAnswerId: isTextType ? null : value,
+      typedAnswer: isTextType ? value : null,
       playerName,
       answeredAt: serverTimestamp()
     });
     answerId = ansRef.id;
     listenForAnswers();
+  }
+
+  async function submitTextAnswer() {
+    await submitAnswer(textAnswer.trim());
   }
 
   async function fetchFinalScore() {
@@ -252,7 +270,11 @@
   function getCorrectAnswerText(): string {
     if (!question) return '';
     const q = question;
-    return q.options.find((o) => o.id === q.correctAnswerId)?.value ?? '';
+    if (q.type === 'type') return q.correctAnswer;
+    if ('options' in q && 'correctAnswerId' in q) {
+      return q.options.find((o) => o.id === q.correctAnswerId)?.value ?? '';
+    }
+    return '';
   }
 </script>
 
@@ -276,72 +298,23 @@
           <AvatarCreator onConfigChange={(c: AvatarConfig) => (avatarConfig = c)} savedConfig={avatarConfig} />
         </div>
       </div>
-    {:else if screen === 'active' && question && countdown !== null}
-      <div>
-        <div class="text-center mb-6">
-          <div class="text-sm text-slate-500 mb-1">
-            Question {currentIndex + 1} of {totalQuestions}
-          </div>
-          <div class="text-6xl font-mono font-bold text-indigo-600">{countdown}</div>
-        </div>
-
-        <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-6 mb-4">
-          <p class="text-xl font-medium text-slate-900">{question.prompt}</p>
-        </div>
-
-        {#if !submitted && countdown > 0 && !previewMode}
-          <div class="space-y-3">
-            {#each question.options as option}
-              <button
-                onclick={() => submitAnswer(option.id)}
-                class="w-full rounded-xl bg-white border border-slate-200 shadow-sm px-6 py-4 text-left text-lg text-slate-800 transition hover:bg-slate-50"
-              >
-                {option.value}
-              </button>
-            {/each}
-          </div>
-        {:else if previewMode}
-          <p class="text-center text-slate-500 text-lg">Answers will appear soon...</p>
-        {:else if countdown > 0}
-          <div class="space-y-3">
-            {#each question.options as option}
-              <button
-                disabled
-                class="w-full rounded-xl bg-white border border-slate-200 shadow-sm px-6 py-4 text-left text-lg text-slate-400 cursor-default"
-              >
-                {option.value}
-              </button>
-            {/each}
-          </div>
-          <div class="mt-6 text-center">
-            <p class="text-slate-500 text-lg">Answer submitted, waiting for results…</p>
-          </div>
-        {:else}
-          <div class="text-center">
-            <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-8 mb-4">
-              {#if submitted && isCorrect}
-                <div class="text-5xl mb-4">&#x2705;</div>
-                <h2 class="text-2xl font-bold text-emerald-600 mb-2">Correct!</h2>
-              {:else if submitted && !isCorrect}
-                <div class="text-5xl mb-4">&#x274C;</div>
-                <h2 class="text-2xl font-bold text-red-500 mb-2">Wrong!</h2>
-              {:else}
-                <div class="text-5xl mb-4">&#x23F0;</div>
-                <h2 class="text-2xl font-bold text-amber-500 mb-2">Time's Up!</h2>
-              {/if}
-              <p class="text-slate-600">
-                Correct answer: <span class="text-emerald-600 font-semibold"
-                  >{getCorrectAnswerText()}</span
-                >
-              </p>
-              <p class="text-slate-600">
-                You earned: <span class="text-emerald-600 font-semibold">{pointsEarned}</span>
-              </p>
-            </div>
-            <p class="text-slate-500">Waiting for the next question…</p>
-          </div>
-        {/if}
-      </div>
+    {:else if screen === 'active' && question && (countdown !== null || noTimeLimit)}
+      <ActiveQuizCard
+        {question}
+        countdown={countdown ?? 0}
+        {countdownActive}
+        {noTimeLimit}
+        {previewMode}
+        {submitted}
+        {isCorrect}
+        {pointsEarned}
+        {currentIndex}
+        {totalQuestions}
+        bind:textAnswer
+        onsubmit={submitAnswer}
+        onsubmittext={submitTextAnswer}
+        {getCorrectAnswerText}
+      />
     {:else if screen === 'finished'}
       <div class="text-center">
         <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-8">
@@ -350,9 +323,7 @@
           <div class="text-5xl font-bold text-indigo-600 mb-2">{score}</div>
           <p class="text-slate-500">points earned</p>
         </div>
-        <a href="/play" class="inline-block mt-6 text-indigo-600 hover:underline"
-          >Join another quiz</a
-        >
+        <a href="/play" class="inline-block mt-6 text-indigo-600 hover:underline">Join another quiz</a>
       </div>
     {/if}
   </div>

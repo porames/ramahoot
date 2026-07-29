@@ -4,12 +4,14 @@
   import { auth, googleProvider } from '$lib/firebase';
   import { teacher, authReady } from '$lib/stores/auth';
 
-  let loading = $state(false);
+  let loading = $state(true);
   let error = $state('');
 
   $effect(() => {
     if ($authReady && $teacher) {
       goto('/teacher/dashboard');
+    } else {
+      loading = false;
     }
   });
 
