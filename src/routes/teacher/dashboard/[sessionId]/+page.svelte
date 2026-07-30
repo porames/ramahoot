@@ -6,15 +6,10 @@
   import {
     doc,
     collection,
-    query,
-    where,
     onSnapshot,
     serverTimestamp,
-    runTransaction,
     addDoc,
     updateDoc,
-    getDocs,
-    getDoc,
     type Unsubscribe
   } from 'firebase/firestore';
   import { db } from '$lib/firebase';
@@ -23,6 +18,9 @@
   import Avatar from '$lib/avatar/Avatar.svelte';
   import SignOutButton from '$lib/SignOutButton.svelte';
   import TeacherDashboard from '$lib/components/TeacherDashboard.svelte';
+  import { initializeSession } from '$lib/utils/dashboard/initializeSession';
+  import { startPing } from '$lib/utils/dashboard/ping';
+  import { listenToAnswers } from '$lib/utils/dashboard/listeners';
 
   const sessionId = $page.params.sessionId!;
 
@@ -40,13 +38,14 @@
   let loading = $state(true);
   let error = $state('');
   let acting = $state(false);
+  let quizStarted = $state(false);
 
   let interval: number | null = null;
   let sessionUnsub: Unsubscribe | null = null;
   let playersUnsub: Unsubscribe | null = null;
   let answersUnsub: Unsubscribe | null = null;
 
-  let liveQuestion = $derived(session?.liveQuestion);
+  let liveQuestion = $derived(questions[currentIndex]);
   let totalQuestions = $derived(questions.length);
   let leaderboard = $derived(
     [...players].sort((a, b) => b.score - a.score).map((s, i) => ({ ...s, rank: i + 1 }))
@@ -73,27 +72,12 @@
         loading = false;
         return;
       }
-
-      const snap = await getDoc(doc(db, 'sessions', sessionId));
-
-      if (!snap.exists()) {
-        error = 'Session not found';
-        loading = false;
-        return;
-      }
-
-      const sessionData = { id: sessionId, ...snap.data() } as Session;
-      session = sessionData;
-      currentIndex = session?.currentIndex ?? 0;
-      const quizDoc = await getDoc(doc(db, 'quizzes', sessionData.quizId));
-      if (!quizDoc.exists()) {
-        error = 'Quiz not found';
-        loading = false;
-        return;
-      }
-      quiz = { id: quizDoc.id, ...quizDoc.data() } as Quiz;
-
-      questions = [...(quiz.questions ?? [])].sort((a, b) => a.order - b.order);
+      const results = await initializeSession(db, sessionId);
+      session = results.session;
+      quiz = results.quiz;
+      questions = results.questions;
+      error = results.error;
+      loading = results.loading;
 
       sessionUnsub = onSnapshot(
         doc(db, 'sessions', sessionId),
@@ -104,6 +88,7 @@
             return;
           }
           session = { id: docSnap.id, ...docSnap.data() } as Session;
+          console.log('session changed', session);
           loading = false;
         },
         (err) => {
@@ -117,26 +102,41 @@
         players = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Player);
       });
 
-      if (sessionData.status === 'active' && sessionData.liveQuestion) {
-        if (sessionData.questionStartedAt) {
-          listenToAnswers(sessionId, sessionData.liveQuestion.id);
-          questionPhase = 'active';
-          const serverNow = Date.now() + drift;
-          const elapsed = (serverNow - sessionData.questionStartedAt.toMillis()) / 1000;
-          const remaining = Math.max(0, Math.ceil(sessionData.liveQuestion.timeLimit - elapsed));
-          if (remaining > 0) {
-            startLocalCountdown(remaining);
+      // restore state on page refresh
+      if (session?.liveQuestion) {
+        currentIndex = session.currentIndex ?? 0;
+
+        if (session.questionStartedAt) {
+          if (
+            liveQuestion.type === 'quiz' ||
+            liveQuestion.type === 'tf' ||
+            liveQuestion.type === 'type'
+          ) {
+            if (session.countdown === 0) {
+              questionPhase = 'finished';
+            } else {
+              const serverNow = Date.now() + drift;
+              const elapsed = (serverNow - session.questionStartedAt.toMillis()) / 1000;
+              const remaining = Math.max(0, Math.ceil(session.liveQuestion.timeLimit - elapsed));
+              if (remaining > 0) {
+                questionPhase = 'active';
+                startLocalCountdown(remaining);
+              } else {
+                questionPhase = 'finished';
+              }
+            }
           } else {
-            questionPhase = 'finished';
+            questionPhase = 'active';
           }
-        } else if (sessionData.previewStartedAt) {
+        } else if (session.previewStartedAt) {
           questionPhase = 'preview';
-          const elapsed = (Date.now() - sessionData.previewStartedAt.toMillis()) / 1000;
+          const serverNow = Date.now() + drift;
+          const elapsed = (serverNow - session.previewStartedAt.toMillis()) / 1000;
           const remaining = Math.max(0, Math.ceil(5 - elapsed));
           if (remaining > 0) {
-            startPreviewCountdown(sessionData.liveQuestion, remaining);
+            startPreviewCountdown(session.liveQuestion, remaining);
           } else {
-            questionPhase = 'finished';
+            questionPhase = 'active';
           }
         }
       }
@@ -150,71 +150,24 @@
   onDestroy(() => {
     sessionUnsub?.();
     playersUnsub?.();
-    answersUnsub?.();
     if (interval !== null) clearInterval(interval);
   });
 
+  $effect(() => startPing(sessionId));
+
   $effect(() => {
-    const pingSessionId = sessionId;
-    updateDoc(doc(db, 'sessions', pingSessionId), {
-      lastPing: serverTimestamp()
-    }).catch(console.log);
-    const pingInterval = window.setInterval(() => {
-      updateDoc(doc(db, 'sessions', pingSessionId), {
-        lastPing: serverTimestamp()
-      }).catch(console.log);
-    }, 60000);
-    return () => clearInterval(pingInterval);
-  });
+    if (!session?.questionStartedAt || !session?.liveQuestion?.id) return;
 
-  function listenToAnswers(sessionId: string, questionId: string) {
-    answersUnsub?.();
-    answersUnsub = onSnapshot(
-      query(
-        collection(db, 'sessions', sessionId, 'answers'),
-        where('questionId', '==', questionId)
-      ),
-      (snap) => {
-        answersForCurrentQuestion = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Answer);
-        for (const answer of answersForCurrentQuestion) {
-          if (!answer.scored && isScorable(answer, questionId)) scoreAnswer(answer, questionId);
-        }
-      }
+    const unsub = listenToAnswers(
+      db,
+      session,
+      questions,
+      session.liveQuestion.id,
+      (v) => (answersForCurrentQuestion = v)
     );
-  }
 
-  function isScorable(answer: Answer, questionId: string) {
-    const q = questions.find((q) => q.id === questionId);
-    if (!q) return false;
-    return q.type === 'quiz' || q.type === 'tf' || q.type === 'type';
-  }
-
-  async function scoreAnswer(answer: Answer, questionId: string) {
-    const q = questions.find((q) => q.id === questionId);
-    if (!q || !session?.questionStartedAt) return;
-
-    let correct = false;
-    if (q.type === 'quiz' || q.type === 'tf') {
-      correct = answer.chosenAnswerId === q.correctAnswerId;
-    } else if (q.type === 'type') {
-      correct = answer.typedAnswer?.toLowerCase().trim() === q.correctAnswer.toLowerCase().trim();
-    }
-
-    const timeTaken = answer.answeredAt.toMillis() - session.questionStartedAt.toMillis();
-    const ratio = Math.min(1, Math.max(0, timeTaken / (q.timeLimit * 1000)));
-    const maxPoints = 1000;
-    const points = correct ? Math.floor(maxPoints * (1 - ratio)) + 1 : 0;
-
-    const answerRef = doc(db, 'sessions', sessionId, 'answers', answer.id);
-    const playerRef = doc(db, 'sessions', sessionId, 'players', answer.playerId);
-
-    await runTransaction(db, async (transaction) => {
-      const playerDoc = await transaction.get(playerRef);
-      const currentScore = playerDoc.data()?.score ?? 0;
-      transaction.update(playerRef, { score: currentScore + points, pointsEarned: points });
-      transaction.update(answerRef, { isCorrect: correct, scored: true, pointsEarned: points });
-    });
-  }
+    return () => unsub();
+  });
 
   function startPreviewCountdown(q: Question, remaining?: number) {
     clearInterval(interval!);
@@ -224,13 +177,14 @@
     const tick = async () => {
       const passed = (Date.now() - adjustedStart) / 1000;
       countdown = Math.max(0, Math.ceil(PREVIEW_SECONDS - passed));
+      // preview countdown done
       if (countdown <= 0) {
+        console.log('preview countdonw done');
         clearInterval(interval!);
         interval = null;
-        await updateDoc(doc(db, 'sessions', session!.id), {
+        await updateDoc(doc(db, 'sessions', sessionId), {
           questionStartedAt: serverTimestamp()
         });
-        listenToAnswers(session!.id, q.id);
         if (q.type === 'poll' || q.type === 'wordCloud' || q.type === 'openEnded') {
           questionPhase = 'active';
         } else if (q.timeLimit === 0) {
@@ -300,6 +254,7 @@
     loading = true;
     const q = questions[0];
     currentIndex = 0;
+    // broadcast liveQuestion
     await updateDoc(doc(db, 'sessions', session.id), {
       status: 'active',
       liveQuestion: q,
@@ -308,6 +263,7 @@
       countdown: null,
       currentIndex: 0
     });
+    quizStarted = true;
     questionPhase = 'preview';
     startPreviewCountdown(q);
     loading = false;
@@ -321,6 +277,7 @@
       await endQuiz();
       return;
     }
+    questionPhase = 'preview';
     acting = true;
     loading = true;
     currentIndex = nextIndex;
@@ -332,7 +289,7 @@
       countdown: null,
       currentIndex: currentIndex
     });
-    questionPhase = 'preview';
+
     startPreviewCountdown(q);
     loading = false;
     acting = false;
@@ -355,7 +312,9 @@
 <div class="min-h-screen p-4">
   <div class="mx-auto max-w-2xl rounded-2xl bg-white shadow-lg p-6">
     <div class="flex items-center justify-between">
-      <a href="/teacher/dashboard" class="text-slate-400 text-sm hover:text-slate-600 transition">&larr; Dashboard</a>
+      <a href="/teacher/dashboard" class="text-slate-400 text-sm hover:text-slate-600 transition"
+        >&larr; Dashboard</a
+      >
       <SignOutButton />
     </div>
 
@@ -384,11 +343,11 @@
               <div class="flex flex-col items-center gap-1">
                 {#if p.avatarConfig}
                   <div class="w-28 h-28">
-                    <Avatar showBackground={false} {...p.avatarConfig} />
+                    <Avatar showBackground={false} {...p.avatarConfig} gradSuffix={p.id} />
                   </div>
                 {:else}
-                  <div class="w-28 h-28 flex items-center justify-center text-3xl text-slate-400">
-                    {p.playerName[0].toUpperCase()}
+                  <div class="w-28 h-28 flex items-center justify-center">
+                    <div class="w-8 h-8 border-[3px] border-slate-200 border-t-indigo-500 rounded-full animate-spin"></div>
                   </div>
                 {/if}
                 <span class="text-sm text-slate-600">{p.playerName}</span>
@@ -429,12 +388,18 @@
           <div class="space-y-2">
             {#each leaderboard as entry}
               {@const isTop3 = entry.rank <= 3}
-              <div class="flex items-center justify-between rounded-xl px-4 py-3 {isTop3 ? 'bg-indigo-50' : ''}">
+              <div
+                class="flex items-center justify-between rounded-xl px-4 py-3 {isTop3
+                  ? 'bg-indigo-50'
+                  : ''}"
+              >
                 <div class="flex items-center gap-3">
-                  <span class="text-sm font-bold w-6 {isTop3 ? 'text-amber-500' : 'text-slate-400'}">#{entry.rank}</span>
+                  <span class="text-sm font-bold w-6 {isTop3 ? 'text-amber-500' : 'text-slate-400'}"
+                    >#{entry.rank}</span
+                  >
                   {#if entry.avatarConfig}
                     <div class="w-10 h-10">
-                      <Avatar showBackground={false} {...entry.avatarConfig} />
+                      <Avatar showBackground={false} {...entry.avatarConfig} gradSuffix={entry.id} />
                     </div>
                   {/if}
                   <span class="text-slate-800">{entry.playerName}</span>
@@ -445,7 +410,10 @@
           </div>
         </div>
 
-        <a href="/teacher/dashboard" class="block text-center rounded-xl bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700">
+        <a
+          href="/teacher/dashboard"
+          class="block text-center rounded-xl bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700"
+        >
           Back to Dashboard
         </a>
       </div>

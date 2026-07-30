@@ -1,3 +1,7 @@
+<script module lang="ts">
+  let nextId = 0;
+</script>
+
 <script lang="ts">
   import Character from '$lib/avatar/Character.svelte';
 
@@ -8,8 +12,11 @@
     mouthStyle = 'smile',
     glasses = 'none',
     hat = 'none',
-    showBackground = true
+    showBackground = true,
+    gradSuffix = ''
   } = $props();
+
+  let id = $derived(gradSuffix || `a${++nextId}`);
 
   function shade(hex: string, percent: number): string {
     const num = parseInt(hex.slice(1), 16);
@@ -26,7 +33,7 @@
 
 <svg id="avatar-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="faceGrad" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="faceGrad-{id}" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color={faceHighlight} />
       <stop offset="100%" stop-color={faceShadow} />
     </linearGradient>
@@ -62,7 +69,7 @@
       <stop offset="0%" stop-color="#ffffff" />
       <stop offset="100%" stop-color="#e8e0f4" />
     </radialGradient>
-    <filter id="faceShadow-f" x="-50%" y="-50%" width="200%" height="200%">
+    <filter id="faceShadow-f-{id}" x="-50%" y="-50%" width="200%" height="200%">
       <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.18" />
     </filter>
   </defs>
@@ -81,5 +88,6 @@
     {mouthStyle}
     {glasses}
     {hat}
+    gradSuffix={id}
   />
 </svg>

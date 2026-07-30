@@ -13,7 +13,8 @@
     eyeStyle = 'normal',
     mouthStyle = 'smile',
     glasses = 'none',
-    hat = 'none'
+    hat = 'none',
+    gradSuffix = ''
   } = $props();
 
   let hideEyes = $derived(characterType === 'dog');
@@ -25,10 +26,10 @@
     cy="150"
     rx="125"
     ry="115"
-    fill="url(#faceGrad)"
+    fill="url(#faceGrad-{gradSuffix})"
     stroke={outlineColor}
     stroke-width="7"
-    filter="url(#faceShadow-f)"
+    filter="url(#faceShadow-f-{gradSuffix})"
   />
   <ellipse cx="150" cy="155" rx="8" ry="6" fill={outlineColor} opacity="0.35" />
   <Eyes {eyeStyle} hide={hideEyes} />
@@ -36,10 +37,10 @@
   <Glasses glassesType={glasses} />
   <Hat hatType={hat} />
 {:else if characterType === 'cat'}
-  <g filter="url(#faceShadow-f)">
+  <g filter="url(#faceShadow-f-{gradSuffix})">
     <path
       d="M50.9,137.5 C49.6,147.2 5.6,255.9 150.0,251.4 C294.4,246.9 268.6,177.0 259.0,137.5 C259.0,137.5 266.7,96.5 254.8,66.8 C254.8,66.8 223.1,64.9 197.7,92.1 C197.7,92.1 154.8,71.2 117.9,92.1 C117.9,92.1 89.9,69.5 60.3,66.8 C60.3,66.8 49.5,82.5 50.9,111.7 C52.3,140.9 52.2,127.9 50.9,137.5 Z"
-      fill="url(#faceGrad)"
+      fill="url(#faceGrad-{gradSuffix})"
       stroke="none"
     />
     <path
@@ -101,13 +102,13 @@
   <g transform="matrix(1,0,0,1,0.15175,0)">
     <g transform="matrix(0.82137,0,0,0.82137,-71.6259,-68.0319)">
       <path
-        fill="url(#faceGrad)"
+        fill="url(#faceGrad-{gradSuffix})"
         d="M148.008,328.249C148.008,328.249 127.148,374.023 274.146,382.046C421.144,390.068 397.006,328.249 397.006,328.249L416.519,319.611C416.519,319.611 446.824,302.008 442.654,259.971C438.517,218.267 416.006,146.13 354.199,180.169L340.603,170.613C340.603,170.613 290.107,114.166 190.965,180.169L181.938,173.764C181.938,173.764 118.63,139.357 99.941,244.952C81.252,350.548 147.05,331.863 148.008,328.249Z"
       />
     </g>
     <g transform="matrix(0.82137,0,0,0.82137,-71.6259,-68.0319)">
       <path
-        fill="url(#faceGrad)"
+        fill="url(#faceGrad-{gradSuffix})"
         d="M148.008,328.249C148.008,328.249 127.148,374.023 274.146,382.046C421.144,390.068 397.006,328.249 397.006,328.249L416.519,319.611C416.519,319.611 446.824,302.008 442.654,259.971C438.517,218.267 416.006,146.13 354.199,180.169L340.603,170.613C340.603,170.613 290.107,114.166 190.965,180.169L181.938,173.764C181.938,173.764 118.63,139.357 99.941,244.952C81.252,350.548 147.05,331.863 148.008,328.249Z"
       />
       <clipPath id="_clip1">
@@ -166,8 +167,8 @@
   <Glasses transform="translate(0,27)" glassesType={glasses} />
   <Hat hatType={hat} />
 {:else if characterType === 'bear'}
-  <circle cx="62" cy="80" r="32" fill="url(#faceGrad)" stroke={outlineColor} stroke-width="6" />
-  <circle cx="238" cy="80" r="32" fill="url(#faceGrad)" stroke={outlineColor} stroke-width="6" />
+  <circle cx="62" cy="80" r="32" fill="url(#faceGrad-{gradSuffix})" stroke={outlineColor} stroke-width="6" />
+  <circle cx="238" cy="80" r="32" fill="url(#faceGrad-{gradSuffix})" stroke={outlineColor} stroke-width="6" />
   <circle cx="62" cy="80" r="14" fill={faceShadow} opacity="0.25" />
   <circle cx="238" cy="80" r="14" fill={faceShadow} opacity="0.25" />
   <ellipse
@@ -175,10 +176,10 @@
     cy="150"
     rx="128"
     ry="120"
-    fill="url(#faceGrad)"
+    fill="url(#faceGrad-{gradSuffix})"
     stroke={outlineColor}
     stroke-width="7"
-    filter="url(#faceShadow-f)"
+    filter="url(#faceShadow-f-{gradSuffix})"
   />
   <ellipse
     cx="150"
@@ -205,7 +206,7 @@
     fill="#fafafa"
     stroke="#1a1a1a"
     stroke-width="6"
-    filter="url(#faceShadow-f)"
+    filter="url(#faceShadow-f-{gradSuffix})"
   />
   <ellipse cx="102" cy="128" rx="24" ry="20" fill="#1a1a1a" transform="rotate(-12, 102, 128)" />
   <ellipse cx="198" cy="128" rx="24" ry="20" fill="#1a1a1a" transform="rotate(12, 198, 128)" />
@@ -226,10 +227,10 @@
     cy="155"
     rx="116"
     ry="108"
-    fill="url(#faceGrad)"
+    fill="url(#faceGrad-{gradSuffix})"
     stroke={outlineColor}
     stroke-width="7"
-    filter="url(#faceShadow-f)"
+    filter="url(#faceShadow-f-{gradSuffix})"
   />
   <ellipse cx="150" cy="172" rx="20" ry="16" fill="#1a1a1a" />
   <ellipse cx="145" cy="167" rx="8" ry="5" fill="#4a4a4a" opacity="0.35" />
@@ -243,7 +244,7 @@
     fill="#4a4a5a"
     stroke="#3a3a4a"
     stroke-width="5"
-    filter="url(#faceShadow-f)"
+    filter="url(#faceShadow-f-{gradSuffix})"
   />
   <ellipse cx="150" cy="195" rx="78" ry="90" fill="#f8f5f0" />
   <ellipse
@@ -311,10 +312,10 @@
     cy="155"
     rx="96"
     ry="100"
-    fill="url(#faceGrad)"
+    fill="url(#faceGrad-{gradSuffix})"
     stroke={outlineColor}
     stroke-width="6"
-    filter="url(#faceShadow-f)"
+    filter="url(#faceShadow-f-{gradSuffix})"
   />
   <circle cx="113" cy="136" r="10" fill="#fff" stroke="#2d2d2d" stroke-width="2.5" />
   <circle cx="187" cy="136" r="10" fill="#fff" stroke="#2d2d2d" stroke-width="2.5" />
