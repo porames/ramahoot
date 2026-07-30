@@ -11,7 +11,7 @@
   ];
 </script>
 
-<div class="min-h-screen bg-[#FFFCF5] py-12 px-4">
+<div class="min-h-screen bg-[#F0E6FF] py-12 px-4">
   <div class="max-w-lg mx-auto">
     <BarChart
       title="Monthly revenue"

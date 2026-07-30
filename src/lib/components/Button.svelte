@@ -22,22 +22,7 @@
   {onclick}
   {disabled}
   {type}
-  class="rounded-xl font-semibold transition disabled:opacity-50 {className}"
-  class:w-full={variant !== 'danger'}
-  class:py-3={variant !== 'danger'}
-  class:bg-indigo-600={variant === 'primary'}
-  class:text-white={variant === 'primary'}
-  class:text-lg={variant === 'primary'}
-  class:hover:bg-indigo-700={variant === 'primary'}
-  class:border-2={variant === 'dashed'}
-  class:border-dashed={variant === 'dashed'}
-  class:border-slate-300={variant === 'dashed'}
-  class:text-slate-400={variant === 'dashed'}
-  class:hover:border-slate-400={variant === 'dashed'}
-  class:hover:text-slate-500={variant === 'dashed'}
-  class:text-red-500={variant === 'danger'}
-  class:text-sm={variant === 'danger'}
-  class:hover:text-red-600={variant === 'danger'}
+  class="font-black uppercase tracking-wide transition-all disabled:opacity-50 {variant === 'primary' ? 'w-full py-3 border-[3px] border-black rounded-lg bg-[#FFD23F] text-black text-base shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5' : variant === 'dashed' ? 'border-[3px] border-black rounded-lg bg-[#4D7CFE] px-4 py-2 text-xs text-white shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5' : 'border-[3px] border-black rounded-lg bg-[#E53E3E] px-3 py-1 text-xs text-white shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5'} {className}"
 >
   {@render children()}
 </button>

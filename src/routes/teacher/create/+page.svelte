@@ -209,139 +209,150 @@
   }
 </script>
 
-<div class="min-h-screen p-4">
-  <div class="mx-auto max-w-2xl rounded-2xl bg-white shadow-lg p-6">
-    <div class="flex items-center justify-between">
-      <a href="/teacher/dashboard" class="text-slate-400 text-sm hover:text-slate-600 transition"
-        >&larr; Dashboard</a
-      >
-      <SignOutButton />
-    </div>
-
-    <h1 class="text-3xl font-bold text-slate-900 mt-4 mb-8">Create a Quiz</h1>
-
-    <div class="mb-6">
-      <Input
-        id="quiz-title"
-        label="Quiz Title"
-        placeholder="e.g. Science Chapter 5 Review"
-        bind:value={title}
-      />
-    </div>
-
-    {#each questions as question, i}
-      <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-6 mb-4 relative">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <h3 class="text-lg font-semibold text-slate-700">Question {i + 1}</h3>
-            {#if questions.length > 1}
-              <Button variant="danger" onclick={() => removeQuestion(i)}>Remove</Button>
-            {/if}
-          </div>
-          <TypeSelector bind:value={question.type} onchange={(v) => changeType(question, v)} />
-        </div>
-
-        <div class="mb-4">
-          <Input placeholder="Enter question prompt" bind:value={question.prompt} />
-        </div>
-
-        {#if question.type === 'quiz'}
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            {#each question.options as option, j}
-              <OptionCard
-                name="correct-{question.id}"
-                optionId={option.id}
-                letter={String.fromCharCode(65 + j)}
-                bind:value={option.value}
-                bind:group={question.correctAnswerId}
-              />
-            {/each}
-          </div>
-        {:else if question.type === 'tf'}
-          <div class="flex gap-3 mb-4">
-            <button
-              onclick={() => (question.correctAnswerId = 'true')}
-              class="flex-1 rounded-xl border-2 px-6 py-4 text-lg font-semibold transition"
-              class:border-emerald-500={question.correctAnswerId === 'true'}
-              class:bg-emerald-50={question.correctAnswerId === 'true'}
-              class:border-slate-300={question.correctAnswerId !== 'true'}
-              class:bg-white={question.correctAnswerId !== 'true'}
-              class:hover:bg-slate-50={question.correctAnswerId !== 'true'}
-            >
-              True
-            </button>
-            <button
-              onclick={() => (question.correctAnswerId = 'false')}
-              class="flex-1 rounded-xl border-2 px-6 py-4 text-lg font-semibold transition"
-              class:border-emerald-500={question.correctAnswerId === 'false'}
-              class:bg-red-50={question.correctAnswerId === 'false'}
-              class:border-red-300={question.correctAnswerId === 'false'}
-              class:border-slate-300={question.correctAnswerId !== 'false'}
-              class:bg-white={question.correctAnswerId !== 'false'}
-              class:hover:bg-slate-50={question.correctAnswerId !== 'false'}
-            >
-              False
-            </button>
-          </div>
-        {:else if question.type === 'type'}
-          <div class="mb-4">
-            <Input
-              label="Correct Answer"
-              placeholder="Enter the exact correct answer"
-              bind:value={question.correctAnswer}
-            />
-          </div>
-        {:else if question.type === 'poll'}
-          <div class="space-y-2 mb-4">
-            {#each question.options as option, j}
-              <div class="flex items-center gap-2">
-                <span class="text-sm font-semibold text-slate-500 w-6"
-                  >{String.fromCharCode(65 + j)}</span
-                >
-                <input
-                  bind:value={option.value}
-                  type="text"
-                  placeholder="Option {String.fromCharCode(65 + j)}"
-                  class="flex-1 rounded-xl bg-white border border-slate-300 px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                {#if question.options.length > 1}
-                  <button
-                    onclick={() => removePollOption(question, j)}
-                    class="text-red-400 hover:text-red-600 transition text-sm font-semibold"
-                    ><Trash2 size={18} /></button
-                  >
-                {/if}
-              </div>
-            {/each}
-            <button
-              onclick={() => addPollOption(question)}
-              class="text-indigo-600 text-sm font-semibold hover:text-indigo-700 transition"
-              >+ Add option</button
-            >
-          </div>
-        {/if}
-
-        {#if question.type !== 'poll' && question.type !== 'wordCloud' && question.type !== 'openEnded'}
-          <div>
-            <Select
-              id="time-limit-{question.id}"
-              label="Time Limit"
-              options={timeLimitOptions}
-              bind:value={question.timeLimit}
-            />
-          </div>
-        {/if}
+<div class="min-h-screen p-4 bg-[#F0E6FF]">
+  <div class="mx-auto max-w-2xl">
+    <div class="relative bg-[#FFF8E7] border-[4px] border-black rounded-lg p-6">
+      <div class="flex items-center justify-between mb-2">
+        <a
+          href="/teacher/dashboard"
+          class="inline-flex items-center gap-1 border-[3px] border-black rounded-lg bg-[#4D7CFE] px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5 transition-all"
+          >&larr; Dashboard</a
+        >
+        <SignOutButton />
       </div>
-    {/each}
 
-    <Button class="mb-4" variant="dashed" onclick={addQuestion}>+ Add Question</Button>
+      <h1 class="text-3xl font-black uppercase tracking-tight text-black mt-4 mb-8">
+        Create a Quiz
+      </h1>
 
-    {#if error}
-      <p class="text-red-500 text-sm mb-4">{error}</p>
-    {/if}
+      <div class="mb-6">
+        <Input
+          id="quiz-title"
+          label="Quiz Title"
+          placeholder="e.g. Science Chapter 5 Review"
+          bind:value={title}
+        />
+      </div>
 
-    <Button onclick={saveQuiz} disabled={saving}>
-      {saving ? 'Saving…' : 'Save Quiz'}
-    </Button>
+      {#each questions as question, i}
+        <div class="border-[3px] border-black rounded-lg bg-white p-6 mb-4 relative">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <h3 class="text-lg font-black text-black uppercase tracking-tight">
+                Question {i + 1}
+              </h3>
+              {#if questions.length > 1}
+                <Button variant="danger" onclick={() => removeQuestion(i)}>Remove</Button>
+              {/if}
+            </div>
+            <TypeSelector bind:value={question.type} onchange={(v) => changeType(question, v)} />
+          </div>
+
+          <div class="mb-4">
+            <Input placeholder="Enter question prompt" bind:value={question.prompt} />
+          </div>
+
+          {#if question.type === 'quiz'}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              {#each question.options as option, j}
+                <OptionCard
+                  name="correct-{question.id}"
+                  optionId={option.id}
+                  letter={String.fromCharCode(65 + j)}
+                  bind:value={option.value}
+                  bind:group={question.correctAnswerId}
+                />
+              {/each}
+            </div>
+          {:else if question.type === 'tf'}
+            <div class="flex gap-3 mb-4">
+              <button
+                onclick={() => (question.correctAnswerId = 'true')}
+                class="flex-1 border-[3px] border-black rounded-lg px-6 py-4 text-lg font-black uppercase transition-all"
+                class:bg-[#17C964]={question.correctAnswerId === 'true'}
+                class:shadow-[4px_4px_0px_0px_#111]={question.correctAnswerId === 'true'}
+                class:bg-white={question.correctAnswerId !== 'true'}
+                class:hover:shadow-[4px_4px_0px_0px_#111]={question.correctAnswerId !== 'true'}
+              >
+                True
+              </button>
+              <button
+                onclick={() => (question.correctAnswerId = 'false')}
+                class="flex-1 border-[3px] border-black rounded-lg px-6 py-4 text-lg font-black uppercase transition-all"
+                class:bg-[#FF5FA2]={question.correctAnswerId === 'false'}
+                class:text-white={question.correctAnswerId === 'false'}
+                class:shadow-[4px_4px_0px_0px_#111]={question.correctAnswerId === 'false'}
+                class:bg-white={question.correctAnswerId !== 'false'}
+                class:text-black={question.correctAnswerId !== 'false'}
+                class:hover:shadow-[4px_4px_0px_0px_#111]={question.correctAnswerId !== 'false'}
+              >
+                False
+              </button>
+            </div>
+          {:else if question.type === 'type'}
+            <div class="mb-4">
+              <Input
+                label="Correct Answer"
+                placeholder="Enter the exact correct answer"
+                bind:value={question.correctAnswer}
+              />
+            </div>
+          {:else if question.type === 'poll'}
+            <div class="space-y-2 mb-4">
+              {#each question.options as option, j}
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-black text-black w-6"
+                    >{String.fromCharCode(65 + j)}</span
+                  >
+                  <input
+                    bind:value={option.value}
+                    type="text"
+                    placeholder="Option {String.fromCharCode(65 + j)}"
+                    class="flex-1 border-[3px] border-black rounded-lg bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 font-semibold focus:outline-none focus:shadow-[3px_3px_0px_0px_#111] transition-shadow"
+                  />
+                  {#if question.options.length > 1}
+                    <button
+                      onclick={() => removePollOption(question, j)}
+                      class="text-red-500 hover:text-red-600 transition text-sm font-black uppercase"
+                      ><Trash2 size={18} /></button
+                    >
+                  {/if}
+                </div>
+              {/each}
+              <button
+                onclick={() => addPollOption(question)}
+                class="text-[#4D7CFE] text-sm font-black uppercase tracking-wide hover:text-[#3a6ae8] transition"
+                >+ Add option</button
+              >
+            </div>
+          {/if}
+
+          {#if question.type !== 'poll' && question.type !== 'wordCloud' && question.type !== 'openEnded'}
+            <div>
+              <Select
+                id="time-limit-{question.id}"
+                label="Time Limit"
+                options={timeLimitOptions}
+                bind:value={question.timeLimit}
+              />
+            </div>
+          {/if}
+        </div>
+      {/each}
+
+      <Button class="mb-4" variant="dashed" onclick={addQuestion}>+ Add Question</Button>
+
+      {#if error}
+        <p class="text-red-600 text-sm font-bold mb-4">{error}</p>
+      {/if}
+
+      <button
+        onclick={saveQuiz}
+        disabled={saving}
+        class="w-full border-[3px] border-black rounded-lg bg-[#17C964] py-3 text-lg font-black uppercase tracking-wide text-black shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5 transition-all disabled:opacity-40"
+      >
+        {saving ? 'Saving…' : 'Save Quiz'}
+      </button>
+    </div>
   </div>
 </div>

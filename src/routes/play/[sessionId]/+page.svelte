@@ -282,54 +282,56 @@
   }
 </script>
 
-<div class="min-h-screen flex items-center justify-center p-4">
-  <div class="w-full max-w-lg rounded-2xl bg-white shadow-lg p-6">
-    {#if loading}
-      <div class="text-center">
-        <p class="text-slate-500 text-lg">Loading…</p>
-      </div>
-    {:else if error}
-      <div class="text-center">
-        <p class="text-red-500 text-lg">{error}</p>
-        <a href="/join" class="text-indigo-600 mt-4 inline-block hover:underline">Try again</a>
-      </div>
-    {:else if screen === 'waiting'}
-      <div class="text-center">
-        <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-8">
-          <div class="text-5xl mb-4">&#x1F3AF;</div>
-          <h1 class="text-2xl font-bold text-slate-900 mb-2">You're in!</h1>
-          <p class="text-slate-500">Waiting for the teacher to start the quiz…</p>
-          <AvatarCreator onConfigChange={(c: AvatarConfig) => (avatarConfig = c)} savedConfig={avatarConfig} />
+<div class="min-h-screen flex items-center justify-center p-4 bg-[#F0E6FF]">
+  <div class="w-full max-w-lg">
+    <div class="relative bg-[#FFF8E7] border-[4px] border-black rounded-lg p-6">
+      {#if loading}
+        <div class="text-center">
+          <p class="text-sm font-bold text-black/50 uppercase">Loading…</p>
         </div>
-      </div>
-    {:else if screen === 'active' && question && (countdown !== null || noTimeLimit)}
-      <ActiveQuizCard
-        {question}
-        countdown={countdown ?? 0}
-        {countdownActive}
-        {noTimeLimit}
-        {previewMode}
-        {submitted}
-        {isCorrect}
-        {pointsEarned}
-        {scored}
-        {currentIndex}
-        {totalQuestions}
-        bind:textAnswer
-        onsubmit={submitAnswer}
-        onsubmittext={submitTextAnswer}
-        {getCorrectAnswerText}
-      />
-    {:else if screen === 'finished'}
-      <div class="text-center">
-        <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-8">
-          <div class="text-5xl mb-4">&#x1F3C6;</div>
-          <h2 class="text-2xl font-bold text-slate-900 mb-4">Quiz Complete!</h2>
-          <div class="text-5xl font-bold text-indigo-600 mb-2">{score}</div>
-          <p class="text-slate-500">points earned</p>
+      {:else if error}
+        <div class="text-center">
+          <p class="text-red-600 text-sm font-bold">{error}</p>
+          <a href="/join" class="inline-block mt-4 border-[3px] border-black rounded-lg bg-[#4D7CFE] px-4 py-2 text-xs font-black uppercase tracking-wide text-white shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5 transition-all">Try again</a>
         </div>
-        <a href="/play" class="inline-block mt-6 text-indigo-600 hover:underline">Join another quiz</a>
-      </div>
-    {/if}
+      {:else if screen === 'waiting'}
+        <div class="text-center">
+          <div class="border-[3px] border-black rounded-lg bg-[#F0F4FF] p-8">
+            <div class="text-5xl mb-4">&#x1F3AF;</div>
+            <h1 class="text-2xl font-black uppercase tracking-tight text-black mb-2">You're in!</h1>
+            <p class="text-xs font-bold text-black/60 uppercase">Waiting for the teacher to start the quiz…</p>
+            <AvatarCreator onConfigChange={(c: AvatarConfig) => (avatarConfig = c)} savedConfig={avatarConfig} />
+          </div>
+        </div>
+      {:else if screen === 'active' && question && (countdown !== null || noTimeLimit)}
+        <ActiveQuizCard
+          {question}
+          countdown={countdown ?? 0}
+          {countdownActive}
+          {noTimeLimit}
+          {previewMode}
+          {submitted}
+          {isCorrect}
+          {pointsEarned}
+          {scored}
+          {currentIndex}
+          {totalQuestions}
+          bind:textAnswer
+          onsubmit={submitAnswer}
+          onsubmittext={submitTextAnswer}
+          {getCorrectAnswerText}
+        />
+      {:else if screen === 'finished'}
+        <div class="text-center">
+          <div class="border-[3px] border-black rounded-lg bg-[#F0FFF4] p-8">
+            <div class="text-5xl mb-4">&#x1F3C6;</div>
+            <h2 class="text-2xl font-black uppercase tracking-tight text-black mb-4">Quiz Complete!</h2>
+            <div class="text-6xl font-black text-black mb-2">{score}</div>
+            <p class="text-xs font-bold text-black/60 uppercase">points earned</p>
+          </div>
+          <a href="/play" class="inline-block mt-6 border-[3px] border-black rounded-lg bg-[#FF5FA2] px-5 py-2.5 text-xs font-black uppercase tracking-wide text-white shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5 transition-all">Join another quiz</a>
+        </div>
+      {/if}
+    </div>
   </div>
 </div>

@@ -116,70 +116,66 @@
   }
 </script>
 
-<div class="min-h-screen flex items-center justify-center p-4">
-  <div class="w-full max-w-sm rounded-2xl bg-white border border-slate-200 shadow-sm p-8">
-    <a href="/" class="text-slate-400 text-sm hover:text-slate-600 transition">&larr; Home</a>
+<div class="min-h-screen flex items-center justify-center p-4 bg-[#F0E6FF]">
+  <div class="w-full max-w-sm">
+    <div class="relative bg-[#FFF8E7] border-[4px] border-black rounded-lg p-8">
+      <a href="/" class="inline-flex items-center gap-1 border-[3px] border-black rounded-lg bg-[#4D7CFE] px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5 transition-all">&larr; Home</a>
 
-    <h1 class="text-2xl font-bold text-slate-900 mt-4 mb-6">Join a Quiz</h1>
+      <h1 class="text-2xl font-black uppercase tracking-tight text-black mt-4 mb-6">Join a Quiz</h1>
 
-    {#if step == 'enterCode'}
-      <div class="mb-6">
-        <label for="code-0" class="block text-sm font-medium text-slate-700 mb-2"
-          >Enter 6-digit code</label
-        >
-        <div class="flex gap-2 justify-center">
-          {#each Array(6) as _, i}
-            <input
-              id={i === 0 ? 'code-0' : 'code-' + i}
-              bind:this={inputRefs[i]}
-              type="text"
-              inputmode="numeric"
-              maxlength="1"
-              value={codeDigits[i]}
-              oninput={() => handleDigitInput(i)}
-              onkeydown={(e) => handleKeyDown(i, e)}
-              onpaste={i === 0 ? handlePaste : undefined}
-              class="w-12 h-14 text-center text-2xl font-mono font-bold rounded-xl bg-white border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          {/each}
+      {#if step == 'enterCode'}
+        <div class="mb-6">
+          <label for="code-0" class="block text-xs font-black uppercase tracking-wide text-black mb-2">Enter 6-digit code</label>
+          <div class="flex gap-2 justify-center">
+            {#each Array(6) as _, i}
+              <input
+                id={i === 0 ? 'code-0' : 'code-' + i}
+                bind:this={inputRefs[i]}
+                type="text"
+                inputmode="numeric"
+                maxlength="1"
+                value={codeDigits[i]}
+                oninput={() => handleDigitInput(i)}
+                onkeydown={(e) => handleKeyDown(i, e)}
+                onpaste={i === 0 ? handlePaste : undefined}
+                class="w-12 h-14 text-center text-2xl font-black border-[3px] border-black rounded-lg bg-white text-black focus:outline-none focus:shadow-[3px_3px_0px_0px_#111] transition-shadow"
+              />
+            {/each}
+          </div>
         </div>
-      </div>
 
-      <button
-        onclick={() => {
-          step = 'setName';
-        }}
-        disabled={!canNext}
-        class="w-full rounded-xl bg-emerald-600 py-3 text-lg font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-      >
-        Next
-      </button>
-    {:else if step == 'setName'}
-      <div class="mb-6">
-        <label for="student-name" class="block text-sm font-medium text-slate-700 mb-2"
-          >Your name</label
+        <button
+          onclick={() => { step = 'setName'; }}
+          disabled={!canNext}
+          class="w-full border-[3px] border-black rounded-lg bg-[#17C964] py-3 text-lg font-black uppercase tracking-wide text-black shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5 transition-all disabled:opacity-40"
         >
-        <input
-          id="student-name"
-          bind:value={playerName}
-          type="text"
-          placeholder="Enter your name"
-          maxlength="30"
-          class="w-full rounded-xl bg-white border border-slate-300 px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
+          Next
+        </button>
+      {:else if step == 'setName'}
+        <div class="mb-6">
+          <label for="student-name" class="block text-xs font-black uppercase tracking-wide text-black mb-2">Your name</label>
+          <input
+            id="student-name"
+            bind:value={playerName}
+            type="text"
+            placeholder="Enter your name"
+            maxlength="30"
+            class="w-full border-[3px] border-black rounded-lg bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 font-semibold focus:outline-none focus:shadow-[3px_3px_0px_0px_#111] transition-shadow"
+          />
+        </div>
 
-      <button
-        onclick={join}
-        disabled={!canJoin || joining}
-        class="w-full rounded-xl bg-emerald-600 py-3 text-lg font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-      >
-        {joining ? 'Joining…' : 'Join'}
-      </button>
-    {/if}
+        <button
+          onclick={join}
+          disabled={!canJoin || joining}
+          class="w-full border-[3px] border-black rounded-lg bg-[#17C964] py-3 text-lg font-black uppercase tracking-wide text-black shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5 transition-all disabled:opacity-40"
+        >
+          {joining ? 'Joining…' : 'Join'}
+        </button>
+      {/if}
 
-    {#if error}
-      <p class="text-red-500 text-sm mb-4">{error}</p>
-    {/if}
+      {#if error}
+        <p class="text-red-600 text-sm font-bold mt-4">{error}</p>
+      {/if}
+    </div>
   </div>
 </div>

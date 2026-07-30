@@ -42,12 +42,12 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3">
         <path d="M13 2 3 14h7l-1 8 10-12h-7z" />
       </svg>
-      <span class="text-xs font-black uppercase tracking-wide">{badge}</span>
+      <span class="text-xs font-black tracking-wide">{badge}</span>
     </div>
   {/if}
 
-  <div class="mb-5">
-    <h3 class="text-xl font-black uppercase tracking-tight text-black">{title}</h3>
+  <div class="mb-4">
+    <h3 class="text-xl font-black tracking-tight text-black">{title}</h3>
     {#if subtitle}
       <p class="text-sm font-bold text-black/50 mt-0.5">{subtitle}</p>
     {/if}

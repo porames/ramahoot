@@ -309,114 +309,116 @@
   }
 </script>
 
-<div class="min-h-screen p-4">
-  <div class="mx-auto max-w-2xl rounded-2xl bg-white shadow-lg p-6">
-    <div class="flex items-center justify-between">
-      <a href="/teacher/dashboard" class="text-slate-400 text-sm hover:text-slate-600 transition"
-        >&larr; Dashboard</a
-      >
-      <SignOutButton />
-    </div>
-
-    {#if error}
-      <p class="text-red-500 mt-4">{error}</p>
-    {:else if !session || loading}
-      <p class="text-slate-500 mt-8">Loading…</p>
-    {:else if session.status === 'waiting'}
-      <div class="mt-8 text-center">
-        <h1 class="text-2xl font-bold text-slate-900 mb-2">{quiz?.title ?? 'Quiz'}</h1>
-        <p class="text-slate-500 mb-8">Share this code with your students</p>
-
-        <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-8 mb-8">
-          <div class="text-7xl font-mono font-bold tracking-[0.2em] text-indigo-600 select-all">
-            {code}
-          </div>
-        </div>
-
-        <div class="text-sm text-slate-500 mb-2">
-          {players.length} student{players.length !== 1 ? 's' : ''} joined
-        </div>
-
-        {#if players.length > 0}
-          <div class="flex flex-wrap gap-4 mb-8 justify-center">
-            {#each players as p}
-              <div class="flex flex-col items-center gap-1">
-                {#if p.avatarConfig}
-                  <div class="w-28 h-28">
-                    <Avatar showBackground={false} {...p.avatarConfig} gradSuffix={p.id} />
-                  </div>
-                {:else}
-                  <div class="w-28 h-28 flex items-center justify-center">
-                    <div class="w-8 h-8 border-[3px] border-slate-200 border-t-indigo-500 rounded-full animate-spin"></div>
-                  </div>
-                {/if}
-                <span class="text-sm text-slate-600">{p.playerName}</span>
-              </div>
-            {/each}
-          </div>
-        {/if}
-
-        <button
-          onclick={startQuiz}
-          disabled={players.length === 0 || acting}
-          class="rounded-xl bg-emerald-600 px-8 py-4 text-xl font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+<div class="min-h-screen p-4 bg-[#F0E6FF]">
+  <div class="mx-auto max-w-2xl">
+    <div class="relative bg-[#FFF8E7] border-[4px] border-black rounded-lg p-6">
+      <div class="flex items-center justify-between">
+        <a href="/teacher/dashboard" class="inline-flex items-center gap-1 border-[3px] border-black rounded-lg bg-[#4D7CFE] px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white shadow-[2px_2px_0px_0px_#111] hover:shadow-[4px_4px_0px_0px_#111] hover:-translate-y-0.5 transition-all"
+          >&larr; Dashboard</a
         >
-          Start Quiz
-        </button>
+        <SignOutButton />
       </div>
-    {:else if session.status === 'active' && liveQuestion && !loading}
-      <TeacherDashboard
-        {liveQuestion}
-        {countdown}
-        {questionPhase}
-        {currentIndex}
-        {totalQuestions}
-        {players}
-        {answersForCurrentQuestion}
-        {leaderboard}
-        {acting}
-        quizTitle={quiz?.title ?? ''}
-        onnext={nextQuestion}
-        onend={endQuiz}
-        onfinish={finishQuestion}
-      />
-    {:else if session.status === 'finished' && quiz}
-      <div class="mt-8">
-        <h1 class="text-2xl font-bold text-slate-900 mb-6 text-center">Results</h1>
 
-        <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-6 mb-4">
-          <div class="space-y-2">
-            {#each leaderboard as entry}
-              {@const isTop3 = entry.rank <= 3}
-              <div
-                class="flex items-center justify-between rounded-xl px-4 py-3 {isTop3
-                  ? 'bg-indigo-50'
-                  : ''}"
-              >
-                <div class="flex items-center gap-3">
-                  <span class="text-sm font-bold w-6 {isTop3 ? 'text-amber-500' : 'text-slate-400'}"
-                    >#{entry.rank}</span
-                  >
-                  {#if entry.avatarConfig}
-                    <div class="w-10 h-10">
-                      <Avatar showBackground={false} {...entry.avatarConfig} gradSuffix={entry.id} />
+      {#if error}
+        <p class="text-red-600 text-sm font-bold mt-4">{error}</p>
+      {:else if !session || loading}
+        <p class="text-sm font-bold text-black/50 uppercase mt-8 text-center">Loading…</p>
+      {:else if session.status === 'waiting'}
+        <div class="mt-8 text-center">
+          <h1 class="text-2xl font-black uppercase tracking-tight text-black mb-2">{quiz?.title ?? 'Quiz'}</h1>
+          <p class="text-xs font-bold text-black/60 uppercase mb-8">Share this code with your students</p>
+
+          <div class="border-[3px] border-black rounded-lg bg-white p-8 mb-8 shadow-[2px_2px_0px_0px_#111]">
+            <div class="text-7xl font-black tracking-[0.15em] text-black select-all">
+              {code}
+            </div>
+          </div>
+
+          <div class="text-xs font-bold text-black/50 uppercase mb-2">
+            {players.length} student{players.length !== 1 ? 's' : ''} joined
+          </div>
+
+          {#if players.length > 0}
+            <div class="flex flex-wrap gap-4 mb-8 justify-center">
+              {#each players as p}
+                <div class="flex flex-col items-center gap-1">
+                  {#if p.avatarConfig}
+                    <div class="w-28 h-28">
+                      <Avatar showBackground={false} {...p.avatarConfig} gradSuffix={p.id} />
+                    </div>
+                  {:else}
+                    <div class="w-28 h-28 flex items-center justify-center">
+                      <div class="w-8 h-8 border-[3px] border-black border-t-[#4D7CFE] rounded-full animate-spin"></div>
                     </div>
                   {/if}
-                  <span class="text-slate-800">{entry.playerName}</span>
+                  <span class="text-xs font-bold text-black/70 uppercase">{p.playerName}</span>
                 </div>
-                <span class="font-mono font-bold text-indigo-600">{entry.score} pts</span>
-              </div>
-            {/each}
-          </div>
-        </div>
+              {/each}
+            </div>
+          {/if}
 
-        <a
-          href="/teacher/dashboard"
-          class="block text-center rounded-xl bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700"
-        >
-          Back to Dashboard
-        </a>
-      </div>
-    {/if}
+          <button
+            onclick={startQuiz}
+            disabled={players.length === 0 || acting}
+            class="border-[3px] border-black rounded-lg bg-[#17C964] px-8 py-4 text-lg font-black uppercase tracking-wide text-black shadow-[3px_3px_0px_0px_#111] hover:shadow-[5px_5px_0px_0px_#111] hover:-translate-y-0.5 transition-all disabled:opacity-40"
+          >
+            Start Quiz
+          </button>
+        </div>
+      {:else if session.status === 'active' && liveQuestion && !loading}
+        <TeacherDashboard
+          {liveQuestion}
+          {countdown}
+          {questionPhase}
+          {currentIndex}
+          {totalQuestions}
+          {players}
+          {answersForCurrentQuestion}
+          {leaderboard}
+          {acting}
+          quizTitle={quiz?.title ?? ''}
+          onnext={nextQuestion}
+          onend={endQuiz}
+          onfinish={finishQuestion}
+        />
+      {:else if session.status === 'finished' && quiz}
+        <div class="mt-8">
+          <h1 class="text-2xl font-black uppercase tracking-tight text-black mb-6 text-center">Results</h1>
+
+          <div class="border-[3px] border-black rounded-lg bg-[#F0FFF4] p-6 mb-4">
+            <div class="space-y-2">
+              {#each leaderboard as entry}
+                {@const isTop3 = entry.rank <= 3}
+                <div
+                  class="flex items-center justify-between border-[3px] border-black rounded-lg px-4 py-3 {isTop3
+                    ? 'bg-[#FFD23F]'
+                    : 'bg-white'}"
+                >
+                  <div class="flex items-center gap-3">
+                    <span class="text-sm font-black w-6 {isTop3 ? 'text-black' : 'text-black/40'}"
+                      >#{entry.rank}</span
+                    >
+                    {#if entry.avatarConfig}
+                      <div class="w-10 h-10">
+                        <Avatar showBackground={false} {...entry.avatarConfig} gradSuffix={entry.id} />
+                      </div>
+                    {/if}
+                    <span class="text-sm font-bold text-black">{entry.playerName}</span>
+                  </div>
+                  <span class="font-black text-black">{entry.score} pts</span>
+                </div>
+              {/each}
+            </div>
+          </div>
+
+          <a
+            href="/teacher/dashboard"
+            class="block text-center border-[3px] border-black rounded-lg bg-[#4D7CFE] py-3 font-black uppercase tracking-wide text-white text-sm shadow-[3px_3px_0px_0px_#111] hover:shadow-[5px_5px_0px_0px_#111] hover:-translate-y-0.5 transition-all"
+          >
+            Back to Dashboard
+          </a>
+        </div>
+      {/if}
+    </div>
   </div>
 </div>
