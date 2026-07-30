@@ -3,12 +3,12 @@
     class="relative bg-white border-[4px] border-black shadow-[8px_8px_0px_0px_#111] rounded-lg p-10 text-center max-w-lg w-full -rotate-[0.5deg]"
   >
     <div
-      class="absolute -top-4 -right-4 rotate-6 bg-[#FFD23F] border-[3px] border-black shadow-[3px_3px_0px_0px_#111] rounded-md px-4 py-1.5"
+      class="absolute -top-4 -right-4 rotate-6 bg-cyan-500 text-white border-[3px] border-black shadow-[3px_3px_0px_0px_#111] rounded-md px-4 py-1.5"
     >
       <span class="text-xs font-black uppercase tracking-wide">BETA</span>
     </div>
 
-    <h1 class="text-6xl font-black uppercase tracking-tight text-black">
+    <h1 class="text-4xl md:text-6xl font-black uppercase tracking-tight text-black">
       <span class="text-[#FF5FA2]">Rama</span><span class="text-[#4D7CFE]">hoot</span>
     </h1>
     <p class="text-sm font-bold text-black/60 mt-2 uppercase tracking-wide">

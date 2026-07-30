@@ -9,6 +9,7 @@
     getDoc,
     orderBy,
     doc,
+    limit,
     serverTimestamp,
     setDoc
   } from 'firebase/firestore';
@@ -56,7 +57,8 @@
     const q = query(
       collection(db, 'quizzes'),
       where('teacherId', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'desc'),
+      limit(10)
     );
     const snap = await getDocs(q);
     quizzes = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Quiz);
@@ -237,9 +239,7 @@
           onclick={() => (pastSessionsOpen = !pastSessionsOpen)}
           class="w-full flex items-center justify-between mt-6 p-3 border-[3px] border-black rounded-lg bg-white hover:bg-gray-100 transition-all cursor-pointer"
         >
-          <span class="text-sm font-black uppercase tracking-wide text-black">
-            Past Sessions ({pastSessions.length})
-          </span>
+          <span class="text-sm font-black uppercase tracking-wide text-black"> Past Sessions </span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="w-4 h-4 text-black transition-transform"
