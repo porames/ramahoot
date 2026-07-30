@@ -67,6 +67,7 @@ export interface Session {
   id: string;
   code: string;
   quizId: string;
+  quizTitle?: string;
   teacherId: string;
   status: SessionStatus;
   liveQuestion: Question | null;

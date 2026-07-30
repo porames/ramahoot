@@ -39,6 +39,7 @@
   let submitted = $state(false);
   let isCorrect = $state(false);
   let pointsEarned = $state(0);
+  let scored = $state(false);
   let loading = $state(true);
   let error = $state('');
   let screen = $state<'waiting' | 'active' | 'answered' | 'finished'>('waiting');
@@ -159,6 +160,7 @@
           screen = 'active';
           if (qChanged) {
             submitted = false;
+            scored = false;
             selectedOptionId = null;
             textAnswer = '';
             answerId = null;
@@ -206,6 +208,7 @@
       if (snap.exists()) {
         const ans = snap.data() as Answer;
         if (ans.isCorrect !== undefined) isCorrect = ans.isCorrect;
+        if (ans.scored) scored = true;
         pointsEarned = ans.pointsEarned;
       }
     });
@@ -228,6 +231,7 @@
         textAnswer = ans.typedAnswer ?? '';
       }
       if (ans.isCorrect !== undefined) isCorrect = ans.isCorrect;
+      if (ans.scored) scored = true;
       listenForAnswers();
     }
   }
@@ -308,6 +312,7 @@
         {submitted}
         {isCorrect}
         {pointsEarned}
+        {scored}
         {currentIndex}
         {totalQuestions}
         bind:textAnswer

@@ -10,6 +10,7 @@
     submitted,
     isCorrect,
     pointsEarned,
+    scored,
     currentIndex,
     totalQuestions,
     textAnswer = $bindable(''),
@@ -25,6 +26,7 @@
     submitted: boolean;
     isCorrect: boolean;
     pointsEarned: number;
+    scored: boolean;
     currentIndex: number;
     totalQuestions: number;
     textAnswer: string;
@@ -37,6 +39,7 @@
     'options' in question ? question.options : []
   );
   let hasOptions = $derived(questionOptions.length > 0);
+  let isScorableType = $derived(question.type === 'quiz' || question.type === 'tf' || question.type === 'type');
 </script>
 
 <div>
@@ -111,7 +114,17 @@
   {:else}
     <div class="text-center">
       <div class="rounded-2xl bg-white border border-slate-200 shadow-sm p-8 mb-4">
-        {#if question.type === 'poll' || question.type === 'wordCloud' || question.type === 'openEnded'}
+        {#if isScorableType && submitted && !scored}
+          <!-- loading while teacher grades -->
+          <div class="flex flex-col items-center">
+            <svg class="animate-spin h-10 w-10 text-indigo-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Grading your answer…</h2>
+            <p class="text-slate-600">Waiting for your score</p>
+          </div>
+        {:else if question.type === 'poll' || question.type === 'wordCloud' || question.type === 'openEnded'}
           <div class="text-5xl mb-4">&#x2705;</div>
           <h2 class="text-2xl font-bold text-emerald-600 mb-2">Answered!</h2>
           <p class="text-slate-600">Your response has been recorded</p>
@@ -125,17 +138,19 @@
           <div class="text-5xl mb-4">&#x23F0;</div>
           <h2 class="text-2xl font-bold text-amber-500 mb-2">Time's Up!</h2>
         {/if}
-        {#if getCorrectAnswerText()}
-          <p class="text-slate-600">
-            Correct answer: <span class="text-emerald-600 font-semibold"
-              >{getCorrectAnswerText()}</span
-            >
-          </p>
-        {/if}
-        {#if question.type !== 'poll' && question.type !== 'wordCloud' && question.type !== 'openEnded'}
-          <p class="text-slate-600">
-            You earned: <span class="text-emerald-600 font-semibold">{pointsEarned}</span>
-          </p>
+        {#if !(isScorableType && submitted && !scored)}
+          {#if getCorrectAnswerText()}
+            <p class="text-slate-600">
+              Correct answer: <span class="text-emerald-600 font-semibold"
+                >{getCorrectAnswerText()}</span
+              >
+            </p>
+          {/if}
+          {#if question.type !== 'poll' && question.type !== 'wordCloud' && question.type !== 'openEnded'}
+            <p class="text-slate-600">
+              You earned: <span class="text-emerald-600 font-semibold">{pointsEarned}</span>
+            </p>
+          {/if}
         {/if}
       </div>
       <p class="text-slate-500">Waiting for the next question…</p>
